@@ -1,0 +1,302 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Montserrat:wght@600&family=Poppins:wght@700&display=swap');
+
+:root {
+    /* Backgrounds */
+    --bg-primary: #FFFFFB; /* Off White */
+    --bg-secondary: #FAF9F7; /* Beige White */
+    --card-bg: #F5F3EE; /* Light Beige */
+
+    /* Accents */
+    --accent: #367588; /* Deep Teal */
+    --accent-secondary: #2A5A67; /* Dark Teal */
+    --accent-hover: #1E3A44; /* Very Dark Teal / Navy */
+
+    /* Text */
+    --text-header: #4E2444; /* Plum */
+    --text-body: #2E2E2E; /* Dark Grey Text */
+    --text-muted: #777777; /* Mid Grey Text */
+
+    /* Borders & Dividers */
+    --divider: #EAE7E3; /* Muted Grey Border */
+
+    /* Base colors */
+    --white: #FFFFFF;
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+    /* Status / Logout */
+    --logout-color: #DC3545;
+    --logout-hover: #C82333;
+
+    /* Active darker background */
+    --bg-active: #F0EFEA; /* slightly darker than bg-primary */
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 260px;
+    background-color: var(--bg-secondary);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    border-right: 2px solid var(--divider);
+    box-shadow: var(--shadow-light);
+    z-index: 1000;
+    font-family: 'Inter', sans-serif; /* Body font */
+}
+
+/* Brand Section */
+.brand {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--divider);
+}
+
+.brand-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-header);
+    transition: transform 0.2s ease;
+    font-family: 'Poppins', sans-serif; /* Heading font */
+}
+
+.brand-link:hover {
+    transform: translateY(-1px);
+}
+
+.logo-container {
+    width: 45px;
+    height: 45px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--white);
+    border: 2px solid var(--accent);
+    box-shadow: var(--shadow-light);
+    margin-right: 12px;
+}
+
+.brand-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.brand-name {
+    font-family: 'Georgia', serif; /* Giaz font */
+    font-size: 32px;                 /* Bigger font size */
+    font-weight: 700;                /* Bold */
+    color: var(--accent);
+    letter-spacing: -0.5px;
+}
+
+/* Navigation Sections */
+.nav-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.nav-bottom {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--divider);
+}
+
+/* Navigation Items */
+.nav-item {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 12px 16px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif; /* UI Elements */
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    transition: width 0.3s ease;
+    border-radius: 0 4px 4px 0;
+}
+
+.nav-item:hover::before {
+    width: 4px;
+}
+
+.nav-item:hover {
+    background: var(--bg-secondary);
+    color: var(--accent);
+    box-shadow: var(--shadow-light);
+}
+
+.nav-item.active {
+    background: var(--bg-active);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.nav-item.active::before {
+    width: 4px;
+}
+
+/* Icons */
+.icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Inter', sans-serif; /* Body font */
+}
+
+/* Profile Item Specific Styling */
+.profile-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.profile-pic {
+    width: 25px;
+    height: 25px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid var(--accent);
+    background: var(--white);
+}
+
+.profile-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+/* Logout Item Specific Styling */
+.logout-item {
+    color: var(--logout-color);
+    font-family: 'Montserrat', sans-serif; /* UI Elements */
+    position: relative;
+}
+
+.logout-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: var(--logout-color);
+    transition: width 0.3s ease;
+    border-radius: 0 4px 4px 0;
+}
+
+.logout-item:hover::before {
+    width: 4px;
+}
+
+.logout-item:hover {
+    background: var(--bg-secondary);
+    color: var(--logout-color);
+    box-shadow: var(--shadow-light);
+}
+
+.logout-item .icon {
+    color: inherit;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 1rem;
+    }
+    
+    .nav-section,
+    .nav-bottom {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .nav-item {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .brand {
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Smooth scrolling for sidebar */
+.sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) var(--bg-secondary);
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-secondary);
+}

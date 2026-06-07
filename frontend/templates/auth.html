@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Authentication - Glammr</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;600&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Top Scroll Track -->
+<div class="background-scroll top-scroll">
+    <div class="scroll-track">
+        {% for i in "12345678901234567890" %}
+            <img src="{% static 'img/' %}{{ forloop.counter }}.jpg" alt="fashion {{ forloop.counter }}">
+        {% endfor %}
+        {% for i in "12345678901234567890" %}
+            <img src="{% static 'img/' %}{{ forloop.counter }}.jpg" alt="fashion {{ forloop.counter }}">
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Bottom Scroll Track -->
+<div class="background-scroll bottom-scroll">
+    <div class="scroll-track reverse">
+        {% for i in "12345678901234567890" %}
+            <img src="{% static 'img/' %}{{ forloop.counter }}.jpg" alt="fashion {{ forloop.counter }}">
+        {% endfor %}
+        {% for i in "12345678901234567890" %}
+            <img src="{% static 'img/' %}{{ forloop.counter }}.jpg" alt="fashion {{ forloop.counter }}">
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Background Logo Overlay -->
+<div class="logo-overlay">
+    <div class="logo-container">
+        <img src="{% static 'img/logo.png' %}" alt="Glammr Logo" class="background-logo">
+    </div>
+</div>
+
+<div class="main-container">
+    <div class="auth-container">
+        <!-- Logo Section - Now at top of form -->
+        <div class="logo-section">
+            <img src="{% static 'img/logo.png' %}" alt="App Logo" class="form-logo">
+        </div>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="form-content">
+            <!-- Login Form -->
+            <div class="form-box {% if show_signup %}hidden{% endif %}" id="login-box">
+                <div class="form-header">
+                    <h2>Welcome</h2>
+                    <p class="form-subtitle">Sign in to your Glammr account</p>
+                </div>
+                
+                <form method="post" action="{% url 'auth' %}" class="auth-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="login">
+                    
+                    <div class="input-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" name="username" placeholder="Enter your username" value="{{ login_data.username|default:'' }}" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+                    </div>
+
+                    {% if login_errors %}
+                        <div class="form-errors">
+                            {% for err in login_errors %}
+                                <div class="error-message">{{ err }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <button type="submit" class="auth-btn">
+                        <span>Sign In</span>
+                    </button>
+                </form>
+                
+                <div class="form-footer">
+                    <p class="toggle-text">New to Glammr? <span class="toggle-link" onclick="showSignup()">Create an account</span></p>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div class="form-box {% if not show_signup %}hidden{% endif %}" id="signup-box">
+                <div class="form-header">
+                    <h2>Join Glammr</h2>
+                    <p class="form-subtitle">Create your account to get started</p>
+                </div>
+                
+                <form method="post" action="{% url 'auth' %}" class="auth-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="signup">
+
+                    <div class="input-group">
+                        <label for="signup-username">Username</label>
+                        <input type="text" id="signup-username" name="username" placeholder="Choose a username" value="{{ signup_data.username|default:'' }}" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" name="email" placeholder="Enter your email" value="{{ signup_data.email|default:'' }}" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="signup-mobile">Mobile Number</label>
+                        <input type="tel" id="signup-mobile" name="mobile_no" placeholder="e.g., +91XXXXXXXXXX" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="signup-password1">Password</label>
+                        <input type="password" id="signup-password1" name="password1" placeholder="Create a password" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="signup-password2">Confirm Password</label>
+                        <input type="password" id="signup-password2" name="password2" placeholder="Confirm your password" required>
+                    </div>
+
+                    {% if signup_errors %}
+                        <div class="form-errors">
+                            {% for err in signup_errors %}
+                                <div class="error-message">{{ err }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <button type="submit" class="auth-btn">
+                        <span>Create Account</span>
+                    </button>
+                </form>
+                
+                <div class="form-footer">
+                    <p class="toggle-text">Already have an account? <span class="toggle-link" onclick="showLogin()">Sign in</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showSignup() {
+        const loginBox = document.getElementById("login-box");
+        const signupBox = document.getElementById("signup-box");
+        
+        loginBox.classList.add("hidden");
+        signupBox.classList.remove("hidden");
+        
+        // Reset scroll position to top when switching forms
+        const container = document.querySelector('.auth-container');
+        container.scrollTop = 0;
+        
+        // Add smooth transition effect
+        setTimeout(() => {
+            signupBox.style.animation = "slideIn 0.5s ease-out";
+        }, 50);
+    }
+
+    function showLogin() {
+        const signupBox = document.getElementById("signup-box");
+        const loginBox = document.getElementById("login-box");
+        
+        signupBox.classList.add("hidden");
+        loginBox.classList.remove("hidden");
+        
+        // Reset scroll position to top when switching forms
+        const container = document.querySelector('.auth-container');
+        container.scrollTop = 0;
+        
+        // Add smooth transition effect
+        setTimeout(() => {
+            loginBox.style.animation = "slideIn 0.5s ease-out";
+        }, 50);
+    }
+
+    {% if show_signup %}
+        showSignup();
+    {% endif %}
+</script>
+</body>
+</html>

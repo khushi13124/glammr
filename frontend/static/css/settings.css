@@ -1,0 +1,243 @@
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #f5f6fa;
+  padding-left: 300px;
+}
+
+.settings-container {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+.settings-title {
+  font-size: 32px;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.settings-section {
+  margin-bottom: 2.5rem;
+}
+
+.section-title {
+  font-size: 20px;
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+/* Settings Items */
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #eee;
+  font-size: 16px;
+  color: #333;
+}
+
+.settings-item input[type="email"] {
+  border: none;
+  background: transparent;
+  color: #444;
+  font-size: 16px;
+}
+
+/* Static Email Display */
+.display-email {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* Label with icon */
+.icon-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Hover and Click Styles */
+.settings-item.clickable {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.settings-item.clickable:hover {
+  background-color: #f3f4f6;
+}
+
+.settings-item.clickable:active {
+  background-color: #e5e7eb;
+}
+
+.settings-item .chevron {
+  color: #9ca3af;
+}
+
+/* Danger hover */
+.settings-item.danger-hover:hover {
+  background-color: #fef2f2;
+}
+
+.settings-item.danger-hover .chevron.danger {
+  color: #b91c1c;
+}
+
+/* Remove hover for static row */
+.settings-item.no-hover {
+  cursor: default;
+}
+
+/* Delete button removed styling as button – now row format used */
+.danger-btn {
+  display: none;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #ccc;
+  border-radius: 34px;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #4f46e5;
+}
+
+input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
+/* Modal */
+.modal {
+  display: none; 
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  background-color: white;
+  margin: 10% auto;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  color: #4f46e5;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.submit-btn {
+  width: 100%;
+  background-color: #4f46e5;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.submit-btn:hover {
+  background-color: #3730a3;
+}
+
+.close {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+#password-message {
+  margin-top: 10px;
+  font-size: 14px;
+  color: red;
+  text-align: center;
+}
+
+.form-error {
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-bottom: 2rem;
+}
+
+.danger-btn {
+  background-color: #dc3545;
+  color: white;
+  padding: 12px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  display: block;
+}
+
+.danger-btn:hover {
+  background-color: #c82333;
+}

@@ -1,0 +1,53 @@
+<form id="search-form" class="searchbar-container" action="{% url 'hybrid_search' %}" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="search-input-wrapper">
+    <!-- Left Search Icon -->
+    <i class="bi bi-search search-icon-inside"></i>
+
+    <!-- Image Upload Icon (right) -->
+    <label for="image-upload" class="image-upload-icon" title="Upload image">
+      <i class="bi bi-image"></i>
+    </label>
+    <input type="file" id="image-upload" name="image" accept="image/*" hidden>
+
+    <!-- Text Input -->
+    <input
+      type="text"
+      id="search-input"
+      name="q"
+      class="form-control search-input"
+      placeholder="Search by text..."
+      value="{{ request.GET.q|default_if_none:'' }}"
+    >
+  </div>
+</form>
+
+<!-- Where AJAX results will render for image search -->
+<div id="image-results" class="masonry-grid mt-4"></div>
+
+<script>
+  document.getElementById("image-upload").addEventListener("change", function(event) {
+      console.log("📸 File selected:", event.target.files[0]);
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Preview
+      const reader = new FileReader();
+      reader.onload = function(e) {
+          let previewDiv = document.getElementById("image-preview");
+          if (!previewDiv) {
+              previewDiv = document.createElement("div");
+              previewDiv.id = "image-preview";
+              document.getElementById("search-form").after(previewDiv);
+          }
+          previewDiv.innerHTML = `
+              <p><strong>Uploaded Image:</strong></p>
+              <img src="${e.target.result}" style="max-height:150px; border-radius:8px;">
+          `;
+      };
+      reader.readAsDataURL(file);
+
+      // 🔥 Submit normally → goes to search_results_image.html
+      document.getElementById("search-form").submit();
+  });
+</script>

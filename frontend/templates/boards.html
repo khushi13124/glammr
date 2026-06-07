@@ -1,0 +1,696 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Boards</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/boards.css' %}">
+</head>
+<body>
+  {% if user.is_authenticated %}
+    {% include 'navbar.html' %}
+  {% endif %}
+
+  <div class="boards-container">
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="page-title">My Boards</h1>
+          <p class="page-subtitle">Curate and organize your visual inspiration</p>
+        </div>
+        <button id="createBoardBtn" class="create-board-btn">
+          <i class="fas fa-plus"></i>
+          <span>Create Board</span>
+        </button>
+      </div>
+    </div>
+
+    {% if boards %}
+      <div class="boards-grid" id="boardsGrid">
+        {% for board in boards %}
+          <div class="board-card" data-board-id="{{ board.id }}">
+            <div class="board-actions">
+              {% if board.name != 'My Saves' %}
+                <button class="delete-board-btn" data-board-id="{{ board.id }}" title="Delete board" aria-label="Delete board">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              {% endif %}
+            </div>
+
+            <a class="board-link" href="{% url 'view_board' board.id %}">
+              <div class="preview-quad">
+                {% with images=board.get_preview_images %}
+                  {% for inspo in images %}
+                    <div class="cell">
+                      <img src="{{ inspo.image_url }}" alt="Board preview" loading="lazy">
+                    </div>
+                  {% endfor %}
+                {% endwith %}
+              </div>
+              <div class="board-meta">
+                <div class="board-name">{{ board.name }}</div>
+                <div class="board-count">
+                  <i class="fas fa-image"></i>
+                  <span class="image-count">{{ board.image_count }}</span> 
+                  <span class="collection-label">COLLECTION</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="fas fa-images"></i>
+        </div>
+        <p>You haven't created any boards yet. Start organizing your inspiration!</p>
+        <button id="createFirstBoardBtn" class="create-board-btn">
+          <i class="fas fa-plus"></i>
+          <span>Create Your First Board</span>
+        </button>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Create Board Modal -->
+  <div class="modal fade" id="createBoardModal" tabindex="-1" aria-hidden="true" aria-labelledby="createBoardModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createBoardModalLabel">Create New Board</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="createBoardForm" novalidate>
+            <div class="mb-3">
+              <label for="boardName" class="form-label">Board Name</label>
+              <input type="text" class="form-control" id="boardName" name="name" 
+                     placeholder="Enter a descriptive name" required maxlength="100" 
+                     aria-describedby="boardNameHelp">
+              <div id="boardNameHelp" class="form-text">
+                Choose a name that describes what you'll save to this board.
+              </div>
+              <div class="invalid-feedback">
+                Please enter a board name.
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="confirmCreateBoardBtn" class="btn btn-primary">
+            Create Board
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteBoardModal" tabindex="-1" aria-hidden="true" aria-labelledby="deleteBoardModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteBoardModalLabel">Delete Board?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>This will remove the board from your collection. You can undo this action for 5 seconds after deleting.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="confirmDeleteBoardBtn" class="btn btn-danger">Delete Board</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="undoToast" class="toast align-items-center text-bg-dark undo-toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        Board deleted successfully.
+        <button id="undoDeleteBtn" class="btn btn-light ms-2">Undo</button>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+
+  <div id="successToast" class="toast align-items-center text-bg-success" role="alert" aria-live="polite" aria-atomic="true" 
+       style="position: fixed; top: 20px; right: 20px; z-index: 1056;">
+    <div class="d-flex">
+      <div class="toast-body" id="successToastBody">
+        Board created successfully!
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const csrf = "{{ csrf_token }}";
+    let deleteTargetBoardId = null;
+
+    // Utility function to normalize preview grids
+    function normalizePreviews() {
+      document.querySelectorAll('.preview-quad').forEach(quad => {
+        const cells = Array.from(quad.querySelectorAll('.cell'));
+        const currentCount = cells.length;
+        
+        // Ensure exactly 4 cells
+        while (quad.querySelectorAll('.cell').length < 4) {
+          const blankCell = document.createElement('div');
+          blankCell.className = 'cell blank';
+          quad.appendChild(blankCell);
+        }
+        
+        // Hide extra cells if more than 4
+        const allCells = quad.querySelectorAll('.cell');
+        allCells.forEach((cell, index) => {
+          if (index >= 4) {
+            cell.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // Create new board card dynamically
+    function createBoardCard(board) {
+      const boardsGrid = document.getElementById('boardsGrid');
+      const emptyState = document.querySelector('.empty-state');
+      
+      // Remove empty state if it exists
+      if (emptyState) {
+        emptyState.remove();
+      }
+      
+      // Ensure boards grid exists
+      if (!boardsGrid) {
+        location.reload();
+        return;
+      }
+      
+      // Create board card element
+      const boardCard = document.createElement('div');
+      boardCard.className = 'board-card board-card-enter';
+      boardCard.setAttribute('data-board-id', board.id);
+      
+      boardCard.innerHTML = `
+        <div class="board-actions">
+          <button class="delete-board-btn" data-board-id="${board.id}" title="Delete board" aria-label="Delete board">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        <a class="board-link" href="/view-board/${board.id}/">
+          <div class="preview-quad">
+            <div class="cell blank"></div>
+            <div class="cell blank"></div>
+            <div class="cell blank"></div>
+            <div class="cell blank"></div>
+          </div>
+          <div class="board-meta">
+            <div class="board-name">${escapeHtml(board.name)}</div>
+            <div class="board-count">
+              <i class="fas fa-image"></i>
+              <span class="image-count">0</span>
+              <span class="collection-label">COLLECTION</span>
+            </div>
+          </div>
+        </a>
+      `;
+      
+      // Add event listeners
+      const deleteBtn = boardCard.querySelector('.delete-board-btn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', handleDeleteClick);
+      }
+      
+      const boardLink = boardCard.querySelector('.board-link');
+      if (boardLink) {
+        boardLink.addEventListener('click', handleBoardClick);
+      }
+      
+      // Add to grid with animation
+      boardsGrid.appendChild(boardCard);
+      
+      // Trigger entrance animation
+      requestAnimationFrame(() => {
+        boardCard.classList.add('board-card-enter-active');
+      });
+    }
+
+    // Handle board link clicks with eye blink animation
+    function handleBoardClick(e) {
+      const eyeIcon = e.currentTarget.querySelector('.eye-icon');
+      if (eyeIcon) {
+        eyeIcon.classList.add('blink');
+        
+        // Remove blink class after animation
+        setTimeout(() => {
+          eyeIcon.classList.remove('blink');
+        }, 300);
+      }
+    }
+    function handleDeleteClick(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      deleteTargetBoardId = e.currentTarget.getAttribute('data-board-id');
+      const modal = new bootstrap.Modal(document.getElementById('deleteBoardModal'));
+      modal.show();
+    }
+
+    // Show success toast
+    function showSuccessToast(message) {
+      const toastEl = document.getElementById('successToast');
+      const toastBody = document.getElementById('successToastBody');
+      if (toastBody) {
+        toastBody.textContent = message;
+      }
+      const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+      toast.show();
+    }
+
+    // Show undo toast
+    function showUndoToast(boardId) {
+      const toastEl = document.getElementById('undoToast');
+      const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+      toastEl.style.display = 'block';
+      toast.show();
+
+      const undoBtn = document.getElementById('undoDeleteBtn');
+      const undoHandler = () => {
+        fetch("{% url 'undo_delete_board' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrf,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ board_id: boardId })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            const card = document.querySelector(`.board-card[data-board-id="${boardId}"]`);
+            if (card) {
+              card.style.display = '';
+            }
+            
+            // Broadcast restore event
+            localStorage.setItem('sync_event', JSON.stringify({
+              action: 'restore_board',
+              board: {
+                id: boardId,
+                name: data.board_name || '',
+                image_count: data.board_image_count || 0
+              },
+              ts: Date.now()
+            }));
+          }
+        })
+        .catch(error => {
+          console.error('Error restoring board:', error);
+        });
+      };
+
+      undoBtn.onclick = undoHandler;
+
+      // Clean up event listener when toast is hidden
+      toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.style.display = 'none';
+        undoBtn.onclick = null;
+      }, { once: true });
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+      normalizePreviews();
+
+      // Modal instances
+      const createBoardModal = new bootstrap.Modal(document.getElementById('createBoardModal'));
+      
+      // Open create board modal
+      function openCreateBoardModal() {
+        const boardNameInput = document.getElementById('boardName');
+        boardNameInput.value = '';
+        boardNameInput.classList.remove('is-invalid');
+        createBoardModal.show();
+        
+        // Focus on input after modal animation
+        setTimeout(() => {
+          boardNameInput.focus();
+        }, 200);
+      }
+      
+      // Event listeners for create board buttons
+      const createBoardBtn = document.getElementById('createBoardBtn');
+      const createFirstBoardBtn = document.getElementById('createFirstBoardBtn');
+      
+      if (createBoardBtn) {
+        createBoardBtn.addEventListener('click', openCreateBoardModal);
+      }
+      
+      if (createFirstBoardBtn) {
+        createFirstBoardBtn.addEventListener('click', openCreateBoardModal);
+      }
+
+      // Form validation and submission
+      const confirmCreateBtn = document.getElementById('confirmCreateBoardBtn');
+      const boardNameInput = document.getElementById('boardName');
+      
+      function validateAndSubmit() {
+        const boardName = boardNameInput.value.trim();
+        
+        if (!boardName) {
+          boardNameInput.classList.add('is-invalid');
+          boardNameInput.focus();
+          return;
+        }
+        
+        boardNameInput.classList.remove('is-invalid');
+        
+        // Show loading state
+        confirmCreateBtn.disabled = true;
+        confirmCreateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+        
+        // Submit form
+        fetch("{% url 'create_board' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrf,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            'name': boardName
+          })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.status === "success") {
+            createBoardModal.hide();
+            createBoardCard({
+              id: data.board_id,
+              name: data.board_name
+            });
+            showSuccessToast(`Board "${data.board_name}" created successfully!`);
+            
+            // Broadcast create event to other tabs
+            localStorage.setItem('sync_event', JSON.stringify({
+              action: 'create_board',
+              board: {
+                id: data.board_id,
+                name: data.board_name,
+                image_count: 0
+              },
+              ts: Date.now()
+            }));
+          } else {
+            throw new Error(data.message || "Failed to create board");
+          }
+        })
+        .catch(error => {
+          console.error('Error creating board:', error);
+          showErrorToast("Failed to create board. Please try again.");
+        })
+        .finally(() => {
+          // Reset button state
+          confirmCreateBtn.disabled = false;
+          confirmCreateBtn.innerHTML = 'Create Board';
+        });
+      }
+      
+      // Event listeners for form submission
+      if (confirmCreateBtn) {
+        confirmCreateBtn.addEventListener('click', validateAndSubmit);
+      }
+      
+      if (boardNameInput) {
+        // Enter key submission
+        boardNameInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            validateAndSubmit();
+          }
+        });
+        
+        // Clear validation state on input
+        boardNameInput.addEventListener('input', (e) => {
+          e.target.classList.remove('is-invalid');
+        });
+      }
+
+      // Delete board functionality
+      const deleteButtons = document.querySelectorAll('.delete-board-btn');
+      deleteButtons.forEach(btn => {
+        btn.addEventListener('click', handleDeleteClick);
+      });
+      
+      // Board link functionality
+      const boardLinks = document.querySelectorAll('.board-link');
+      boardLinks.forEach(link => {
+        link.addEventListener('click', handleBoardClick);
+      });
+      
+      // Confirm delete button
+      const confirmDeleteBtn = document.getElementById('confirmDeleteBoardBtn');
+      if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', () => {
+          if (!deleteTargetBoardId) return;
+          
+          // Show loading state
+          confirmDeleteBtn.disabled = true;
+          confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+          
+          fetch("{% url 'delete_board' %}", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": csrf,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ board_id: deleteTargetBoardId })
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.status === "success") {
+              const card = document.querySelector(`.board-card[data-board-id="${deleteTargetBoardId}"]`);
+              if (card) {
+                card.style.display = 'none';
+              }
+              
+              const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteBoardModal'));
+              if (deleteModal) {
+                deleteModal.hide();
+              }
+
+              // Broadcast delete event to other tabs
+              localStorage.setItem('sync_event', JSON.stringify({
+                action: 'delete_board',
+                board_id: deleteTargetBoardId,
+                ts: Date.now()
+              }));
+
+              showUndoToast(deleteTargetBoardId);
+            } else {
+              throw new Error(data.message || "Failed to delete board");
+            }
+          })
+          .catch(error => {
+            console.error('Error deleting board:', error);
+            showErrorToast("Failed to delete board. Please try again.");
+          })
+          .finally(() => {
+            // Reset button state
+            confirmDeleteBtn.disabled = false;
+            confirmDeleteBtn.innerHTML = 'Delete Board';
+            deleteTargetBoardId = null;
+          });
+        });
+      }
+    });
+
+    // Error toast function
+    function showErrorToast(message) {
+      // Create error toast if it doesn't exist
+      let errorToast = document.getElementById('errorToast');
+      if (!errorToast) {
+        errorToast = document.createElement('div');
+        errorToast.id = 'errorToast';
+        errorToast.className = 'toast align-items-center text-bg-danger';
+        errorToast.style = 'position: fixed; top: 20px; right: 20px; z-index: 1056;';
+        errorToast.setAttribute('role', 'alert');
+        errorToast.setAttribute('aria-live', 'assertive');
+        errorToast.setAttribute('aria-atomic', 'true');
+        
+        errorToast.innerHTML = `
+          <div class="d-flex">
+            <div class="toast-body" id="errorToastBody">
+              ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        `;
+        
+        document.body.appendChild(errorToast);
+      } else {
+        const errorToastBody = document.getElementById('errorToastBody');
+        if (errorToastBody) {
+          errorToastBody.textContent = message;
+        }
+      }
+      
+      const toast = new bootstrap.Toast(errorToast, { delay: 5000 });
+      toast.show();
+    }
+
+    // Cross-tab synchronization
+    window.addEventListener('storage', (ev) => {
+      if (!ev.key || ev.key !== 'sync_event') return;
+      
+      try {
+        const data = JSON.parse(ev.newValue || '{}');
+        if (!data || !data.action) return;
+
+        switch (data.action) {
+          case 'create_board':
+            // Check if board card already exists
+            if (!document.querySelector(`.board-card[data-board-id="${data.board.id}"]`)) {
+              createBoardCard(data.board);
+            }
+            break;
+
+          case 'delete_board':
+            const deleteCard = document.querySelector(`.board-card[data-board-id="${data.board_id}"]`);
+            if (deleteCard) {
+              deleteCard.style.display = 'none';
+            }
+            break;
+
+          case 'restore_board':
+            const restoreCard = document.querySelector(`.board-card[data-board-id="${data.board.id}"]`);
+            if (restoreCard) {
+              restoreCard.style.display = '';
+              const nameNode = restoreCard.querySelector('.board-name');
+              if (nameNode && data.board.name) {
+                nameNode.textContent = data.board.name;
+              }
+              const countNode = restoreCard.querySelector('.image-count');
+              if (countNode && data.board.image_count !== undefined) {
+                countNode.textContent = data.board.image_count;
+              }
+            } else {
+              // Board not present, reload page to show restored board
+              location.reload();
+            }
+            break;
+
+          case 'unsave_image':
+            // Update board counts
+            if (data.affected_boards) {
+              data.affected_boards.forEach(b => {
+                const countElem = document.querySelector(`.board-card[data-board-id="${b.board_id}"] .image-count`);
+                if (countElem) {
+                  countElem.textContent = b.count;
+                }
+              });
+            }
+            
+            // Handle preview image replacement
+            if (data.image_url) {
+              document.querySelectorAll(`.preview-quad img[src="${data.image_url}"]`).forEach(img => {
+                const parent = img.closest('.cell');
+                if (parent) {
+                  if (data.replacement_image_url) {
+                    parent.innerHTML = `<img src="${data.replacement_image_url}" alt="Board preview" loading="lazy">`;
+                    parent.classList.remove('blank');
+                  } else {
+                    parent.innerHTML = '';
+                    parent.classList.add('blank');
+                  }
+                }
+              });
+            }
+            break;
+
+          case 'save_image':
+            // Update image count for the board
+            const saveCountElem = document.querySelector(`.board-card[data-board-id="${data.board_id}"] .image-count`);
+            if (saveCountElem && data.board_image_count !== undefined) {
+              saveCountElem.textContent = data.board_image_count;
+            }
+            
+            // Update preview if there's a blank cell
+            const quad = document.querySelector(`.board-card[data-board-id="${data.board_id}"] .preview-quad`);
+            if (quad && data.image_url) {
+              const blankCell = quad.querySelector('.cell.blank');
+              if (blankCell) {
+                blankCell.classList.remove('blank');
+                blankCell.innerHTML = `<img src="${data.image_url}" alt="Board preview" loading="lazy">`;
+              } else {
+                // Replace the last cell with new image
+                const cells = quad.querySelectorAll('.cell');
+                if (cells.length >= 4 && cells[3]) {
+                  cells[3].innerHTML = `<img src="${data.image_url}" alt="Board preview" loading="lazy">`;
+                }
+              }
+            }
+            break;
+
+          default:
+            console.log('Unknown sync action:', data.action);
+        }
+      } catch (e) {
+        console.error('Error parsing sync event:', e);
+      }
+    });
+
+    // Handle page visibility changes for better performance
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        // Page became visible, refresh preview normalization
+        normalizePreviews();
+      }
+    });
+
+    // Keyboard accessibility improvements
+    document.addEventListener('keydown', (e) => {
+      // Close modals with Escape key
+      if (e.key === 'Escape') {
+        const openModals = document.querySelectorAll('.modal.show');
+        openModals.forEach(modal => {
+          const modalInstance = bootstrap.Modal.getInstance(modal);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

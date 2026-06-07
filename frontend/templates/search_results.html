@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Results - Fashion Inspiration</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/index.css' %}">
+  <link rel="stylesheet" href="{% static 'css/searchbar.css' %}">
+</head>
+<body>
+  {% if user.is_authenticated %}
+    {% include 'navbar.html' %}
+    {% include 'searchbar.html' %}
+  {% endif %}
+
+  <!-- ✅ wrapper same as index.html -->
+  <div class="main-content">
+      <div class="container-fluid">
+      <div id="masonry-grid">
+        {% if results %}
+        {% for img in results %}
+          {% cycle 'h-1' 'h-2' 'h-3' 'h-4' 'h-5' as height_class silent %}
+          <div class="grid-item " data-image-id="{{ forloop.counter }}">
+            <div class="img-wrapper {{ height_class }}">
+              <div class="image-detail-link"
+                 data-id="{{ forloop.counter|default:'' }}"
+                 data-type="search"
+                 data-path="{{ img.image }}"
+                 data-filename="{{ img.title|default:'' }}">
+                <img src="{{ img.image }}" alt="{{ img.title }}" loading="lazy">
+              </div>
+              <button class="save-btn"
+                    data-image="{{ img.image }}"
+                    data-bs-toggle="modal"
+                    data-bs-target="#saveModal">
+              <i class="bi bi-pin-angle-fill"></i>
+            </button>
+            </div>
+          </div>
+        {% endfor %}
+      
+    {% else %}
+      <p class="px-3">No results found.</p>
+    {% endif %}
+    </div>
+  </div>
+</div>
+<!-- Enhanced Save Modal -->
+<div class="modal fade" id="saveModal" tabindex="-1" aria-labelledby="saveModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content save-modal-content">
+      <div class="modal-header save-modal-header">
+        <div class="modal-title-wrapper">
+          <div class="modal-icon">
+            <i class="bi bi-pin-angle-fill"></i>
+          </div>
+          <h5 class="modal-title">Save to Board</h5>
+        </div>
+        <button type="button" class="btn-close save-modal-close" data-bs-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body save-modal-body">
+        <input type="hidden" id="selectedImage">
+        
+        <!-- Loading State -->
+        <div class="boards-loading" id="boardsLoading">
+          <div class="loading-spinner"></div>
+          <p>Loading your boards...</p>
+        </div>
+
+        <!-- Boards List -->
+        <div class="modal-board-list" id="modalBoardsList">
+          {% if boards %}
+            {% for board in boards %}
+              <button class="save-to-board-btn"
+                      data-board="{{ board.id }}" 
+                      data-count="{{ board.non_deleted_count }}">
+                <div class="board-info">
+                  <span class="board-name">{{ board.name }}</span>
+                  <span class="board-count">{{ board.non_deleted_count }}</span>
+                </div>
+                <div class="save-status">
+                  <i class="bi bi-plus-lg"></i>
+                </div>
+              </button>
+            {% endfor %}
+          {% else %}
+            <div class="no-boards-message">
+              <i class="bi bi-collection"></i>
+              <p>No boards yet. Create your first one below!</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Create New Board Section -->
+        <div class="create-board-section">
+          <div class="section-divider"></div>
+          <div class="create-board-header">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Create New Board</span>
+          </div>
+          <div class="create-board-form">
+            <input type="text" 
+                   id="newBoardName" 
+                   class="board-input" 
+                   placeholder="Enter board name..." 
+                   maxlength="50">
+            <button id="createBoardBtn" class="create-board-btn">
+              <i class="bi bi-plus-lg"></i>
+              <span>Create & Save</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'js/index.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  window.urls = {
+    imageView: "{% url 'image_view' %}",
+    getBoards: "{% url 'get_boards' %}",
+    createBoard: "{% url 'create_board' %}",
+    saveToBoard: "{% url 'save_to_board' %}"
+  };
+</script>
+</body>
+</html>

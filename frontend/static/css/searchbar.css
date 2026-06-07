@@ -1,0 +1,61 @@
+/* Container aligned beside sidebar */
+.searchbar-container {
+  margin-left: 300px;
+  margin-top: 20px;
+  margin-right: 20px;
+}
+
+/* Wrapper positions both icons inside input */
+.search-input-wrapper {
+  margin: 10px;
+  position: relative;
+  width: 100%;
+}
+
+/* Input field */
+.search-input {
+  width: 100%;
+  padding-left: 3rem;  /* for search icon */
+  padding-right: 2.5rem; /* for image upload icon */
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  transition: all 0.3s ease-in-out;
+  height: 48px;
+  font-size: 16px;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+.search-input:focus {
+  
+  border-color: #b2b2b2;
+  outline: none;
+  box-shadow: 0 0 8px rgba(44, 42, 48, 0.3); /* soft elegant glow */
+}
+
+/* 🔍 Search icon on the left */
+.search-icon-inside {
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  transform: translateY(-50%);
+  color: #777;
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+/* 📷 Upload icon on the right */
+.image-upload-icon {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: #808080;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s ease;
+}
+
+.image-upload-icon:hover {
+  transform: translateY(-50%) scale(1.13);
+}

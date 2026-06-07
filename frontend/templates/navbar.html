@@ -1,0 +1,58 @@
+{% load static %}
+<!-- Include Lucide -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Navigation Bar -->
+<div class="sidebar">
+    <!-- Brand Logo + Name -->
+    <div class="brand">
+        <a href="{% url 'index' %}" class="brand-link">
+            <div class="logo-container">
+                <img src="{% static 'img/logo.png' %}" alt="App Logo" class="brand-logo">
+            </div>
+            <span class="brand-name">Glammr</span>
+        </a>
+    </div>
+
+    <!-- Main Navigation -->
+    <div class="nav-section">
+        <a href="{% url 'index' %}" class="nav-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+            <i data-lucide="home" class="icon"></i>
+            <span class="text">Home</span>
+        </a>
+        <a href="{% url 'my_boards' %}" class="nav-item {% if request.resolver_match.url_name == 'my_boards' %}active{% endif %}">
+            <i data-lucide="layout-dashboard" class="icon"></i>
+            <span class="text">My Boards</span>
+        </a>
+        <a href="{% url 'upload' %}" class="nav-item {% if request.resolver_match.url_name == 'upload' %}active{% endif %}">
+            <i data-lucide="upload" class="icon"></i>
+            <span class="text">Upload</span>
+        </a>
+        <a href="{% url 'my_feed' %}" class="nav-item {% if request.resolver_match.url_name == 'my_feed' %}active{% endif %}">
+            <i data-lucide="user" class="icon"></i>
+            <span class="text">My Feed</span>
+        </a>
+        <a href="{% url 'myaccount' %}" class="nav-item profile-icon {% if request.resolver_match.url_name == 'myaccount' %}active{% endif %}">
+            <div class="profile-pic">
+                <img src="{% if user.userprofile.profile_picture %}{{ user.userprofile.profile_picture.url }}{% else %}{% static 'img/default_profile.jpg' %}{% endif %}" class="profile-thumb">
+            </div>
+            <span class="text">My Profile</span>
+        </a>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="nav-bottom">
+        <a href="{% url 'settings_page' %}" class="nav-item {% if request.resolver_match.url_name == 'settings_page' %}active{% endif %}">
+            <i data-lucide="settings" class="icon"></i>
+            <span class="text">Settings</span>
+        </a>
+        <a href="{% url 'logout' %}" class="nav-item logout-item">
+            <i data-lucide="log-out" class="icon"></i>
+            <span class="text">Logout</span>
+        </a>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons(); // Renders Lucide icons
+</script>

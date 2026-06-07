@@ -1,0 +1,201 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Account</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Navbar styles -->
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+  <!-- Page styles -->
+  <link rel="stylesheet" href="{% static 'css/myaccount.css' %}">
+  <!-- Font Awesome (icons from second code) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+
+{% if user.is_authenticated %}
+  {% include "navbar.html" %}
+{% endif %}
+
+<main class="account-container">
+  <div class="account-wrapper">
+
+    <!-- Profile Accordion Section -->
+    <div class="accordion-section">
+      <div class="accordion-header" onclick="toggleAccordion('profile')">
+        <div class="accordion-title">
+          <i class="fa-solid fa-user"></i>
+          Profile Information
+        </div>
+        <i class="fa-solid fa-chevron-down accordion-toggle" id="profile-toggle"></i>
+      </div>
+      
+      <div class="accordion-content expanded" id="profile-content">
+        <div class="profile-section">
+          <div class="profile-left-content">
+            <form id="profile-form" action="{% url 'edit_profile' %}" method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="profile-picture">
+                <img
+                  id="profile-preview"
+                  alt="Profile picture"
+                  src="{% if user.userprofile.profile_picture %}{{ user.userprofile.profile_picture.url }}{% else %}{% static 'img/default_profile.jpg' %}{% endif %}">
+              </div>
+
+              <input type="file" name="profile_picture" id="profile-input" accept="image/*" hidden onchange="previewAndSubmit()" />
+              <label for="profile-input" class="edit-photo-btn">
+                <i class="fa-solid fa-camera"></i> Edit Photo
+              </label>
+            </form>
+          </div>
+
+          <div class="profile-right-content">
+            <h2 class="profile-name">{{ user.username }}</h2>
+            
+            <div class="profile-info">
+              {% if show_email %}
+                <p class="info"><i class="fa-solid fa-envelope"></i> {{ user.email }}</p>
+              {% endif %}
+              <p class="info"><i class="fa-solid fa-phone"></i> {{ user.userprofile.mobile_no }}</p>
+              <p class="info"><i class="fa-regular fa-calendar"></i> Joined: {{ user.date_joined|date:"F j, Y" }}</p>
+              <p class="info"><i class="fa-regular fa-clock"></i> Last Login: {{ user.last_login|date:"F j, Y, g:i a" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Summary Accordion Section -->
+    <div class="accordion-section">
+      <div class="accordion-header" onclick="toggleAccordion('activity')">
+        <div class="accordion-title">
+          <i class="fa-solid fa-chart-line"></i>
+          Activity Summary
+        </div>
+        <i class="fa-solid fa-chevron-down accordion-toggle" id="activity-toggle"></i>
+      </div>
+      
+      <div class="accordion-content expanded" id="activity-content">
+        <div class="activity-section">
+          <div class="stats-row">
+            <a class="stat-card" href="{% url 'view_board' my_saves_board_id %}" data-stat="saves">
+              <i class="fa-solid fa-bookmark stat-icon" aria-hidden="true"></i>
+              <div class="stat-value">{{ total_saves }}</div>
+              <div class="stat-label">{{ total_saves|pluralize:"Save,Saves" }}</div>
+            </a>
+
+            <a class="stat-card" href="{% url 'my_feed' %}" data-stat="uploads">
+              <i class="fa-solid fa-cloud-arrow-up stat-icon" aria-hidden="true"></i>
+              <div class="stat-value">{{ total_uploads }}</div>
+              <div class="stat-label">{{ total_uploads|pluralize:"Upload,Uploads" }}</div>
+            </a>
+
+            <a class="stat-card" href="{% url 'my_boards' %}" data-stat="boards">
+              <i class="fa-solid fa-grip stat-icon" aria-hidden="true"></i>
+              <div class="stat-value">{{ total_boards }}</div>
+              <div class="stat-label">{{ total_boards|pluralize:"Board,Boards" }}</div>
+            </a>
+
+            {% if total_likes %}
+            <a class="stat-card" href="#" data-stat="likes">
+              <i class="fa-solid fa-heart stat-icon" aria-hidden="true"></i>
+              <div class="stat-value">{{ total_likes }}</div>
+              <div class="stat-label">{{ total_likes|pluralize:"Like,Likes" }}</div>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Stats Updater JavaScript -->
+<script src="{% static 'js/stats-updater.js' %}"></script>
+
+<script>
+  // Accordion toggle functionality
+  function toggleAccordion(section) {
+    const content = document.getElementById(section + '-content');
+    const toggle = document.getElementById(section + '-toggle');
+    
+    if (content.classList.contains('expanded')) {
+      content.classList.remove('expanded');
+      toggle.classList.remove('rotated');
+    } else {
+      content.classList.add('expanded');
+      toggle.classList.add('rotated');
+    }
+  }
+
+  // Change photo: preview then auto-submit to edit_profile
+  function previewAndSubmit() {
+    const input = document.getElementById('profile-input');
+    const preview = document.getElementById('profile-preview');
+    const form = document.getElementById('profile-form');
+
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        preview.src = e.target.result;
+        setTimeout(() => form.submit(), 200);
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  // Initialize stats functionality when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check for URL parameters that might indicate actions
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Trigger an immediate refresh so stats are correct on first paint
+    if (window.statsUpdater) {
+      window.statsUpdater.refreshAllStats();
+    } else {
+      // If not yet initialized, try shortly after
+      setTimeout(() => window.statsUpdater && window.statsUpdater.refreshAllStats(), 200);
+    }
+
+    // Handle board creation/deletion from other pages
+    if (urlParams.has('board_created')) {
+      StatsUpdater.incrementBoards();
+    } else if (urlParams.has('board_deleted')) {
+      StatsUpdater.decrementBoards();
+    }
+    
+    // Handle saves from other pages
+    if (urlParams.has('item_saved')) {
+      StatsUpdater.incrementSaves();
+    } else if (urlParams.has('item_unsaved')) {
+      StatsUpdater.decrementSaves();
+    }
+    
+    // Handle uploads from other pages
+    if (urlParams.has('item_uploaded')) {
+      StatsUpdater.incrementUploads();
+    }
+    
+    // Handle likes from other pages
+    if (urlParams.has('item_liked')) {
+      StatsUpdater.incrementLikes();
+    } else if (urlParams.has('item_unliked')) {
+      StatsUpdater.decrementLikes();
+    }
+
+    // Auto-refresh stats on page focus (when user returns to tab)
+    window.addEventListener('focus', function() {
+      if (window.statsUpdater) {
+        window.statsUpdater.refreshAllStats();
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
