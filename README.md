@@ -141,7 +141,11 @@ cloudinary.config(
 
 ### 5. Set up the DeepFashion dataset
 
-Verify the dataset availabilty in the repository in data/ directory
+Download the [DeepFashion dataset](http://mmlab.ie.cuhk.edu.hk/projects/DeepFashion.html) and place images under:
+
+```
+data/deepfashion/img/
+```
 
 ### 6. Build the feature index
 
